@@ -1,34 +1,49 @@
 from datetime import datetime
-
-class Bus:
-    name = "001"
-    stops = ["пр. Третье кольцо", "пр. Второе кольцо", "пр. Первое кольцо", "ул. Речная"]
-
-    
-def Get_route(on_the_way):
-    if on_the_way:
-        return "Автобус в пути"
-    return "Автобус в автопарке"
+from storage import load_buses
+from buses import get_route_status, get_bus_stops, find_bus
+from utils import input_int
 
 
-def Bus_stops():
-    route = ""                 
-    for i in Bus.stops:
-        route = route + i + ", "
-    route = route[:-2] + "."
-    return route
+def show_buses(buses: list[dict]) -> None:
+    """Выводит список всех маршрутов."""
+    if not buses:
+        print("Автопарк пуст.")
+        return   
+    for bus in buses:
+        print(f"Автобус следует по маршруту '{bus.get('name')}'.")
+        print(f"Остановки на маршруте: {get_bus_stops(bus)}")
+        print(get_route_status(bus))       
+        arriving = 60 - datetime.now().minute
+        if arriving != 0:
+            print(f"Автобус приедет через {arriving} минут к начальной остановке.")
+        else:
+            print("Автобус прибывает к остановке.")
+        print("-" * 30)
 
 
-def Arr_time():
-    arrving = 60 - datetime.now().minute
-    if arrving != 0:
-        return f"Автобус приедет через {arrving} минут к начальной остановке"
-    return "Автобус прибывает к останоке"
+def main() -> None:
+    """Точка запуска приложения."""
+    filename = "data/buses.json"
+    buses = load_buses(filename)
+
+    while True:
+        print("\n=== Система учета общественного транспорта ===")
+        print("2. Найти маршрут")
+        print("1. Показать список маршрутов")
+        print("0. Выход")       
+        choice = input_int("Выберите действие: ")        
+        if choice == 1:
+            show_buses(buses)
+        elif choice == 0:
+            print("Работа завершена.")
+            break
+        elif choice == 2:
+            query = input("Введите название маршрута для поиска: ")
+            found = find_bus(buses, query)
+            show_buses(found)
+        else:
+            print("Неизвестная команда, попробуйте еще раз.")
 
 
-print(f"Автобус следует по маршруту '{Bus.name}'.")
-print(f"Остановки на маршруте: {Bus_stops()}")
-print("Автобус следует по маршруту с интервалом раз в час")
-print(Arr_time())
-print(Get_route(Bus.on_the_way))
-
+if __name__ == "__main__":
+    main()
