@@ -1,18 +1,22 @@
 from datetime import datetime
-from storage import load_buses
-from buses import get_route_status, get_bus_stops, find_bus
+from storage import load_data, save_data
+from buses import Bus, find_bus
 from utils import input_int
 
 
-def show_buses(buses: list[dict]) -> None:
-    """Выводит список всех маршрутов."""
+def show_buses(buses: list[Bus]) -> None:
+    """Выводит список всех автобусов."""
     if not buses:
         print("Автопарк пуст.")
-        return   
+        return
     for bus in buses:
-        print(f"Автобус следует по маршруту '{bus.get('name')}'.")
-        print(f"Остановки на маршруте: {get_bus_stops(bus)}")
-        print(get_route_status(bus))       
+        # Проверяем, назначен ли маршрут
+        if bus.route:
+            print(f"Автобус {bus.plate} следует по маршруту '{bus.route.name}'.")
+            print(f"Остановки на маршруте: {bus.route.get_stops_str()}")
+        else:
+            print(f"Автобус {bus.plate} не имеет назначенного маршрута.")  
+        print(bus.get_route_status())  
         arriving = 60 - datetime.now().minute
         if arriving != 0:
             print(f"Автобус приедет через {arriving} минут к начальной остановке.")
@@ -23,11 +27,11 @@ def show_buses(buses: list[dict]) -> None:
 
 def main() -> None:
     """Точка запуска приложения."""
-    filename = "data/buses.json"
-    buses = load_buses(filename)
+    data_dir = "data"  
+    stops, routes, drivers, buses = load_data(data_dir)
 
     while True:
-        print("\n=== Система учета общественного транспорта ===")
+        print("\n Система учета общественного транспорта ")
         print("2. Найти маршрут")
         print("1. Показать список маршрутов")
         print("0. Выход")       
@@ -35,10 +39,11 @@ def main() -> None:
         if choice == 1:
             show_buses(buses)
         elif choice == 0:
-            print("Работа завершена.")
+            save_data(data_dir, stops, routes, drivers, buses)
+            print("Данные сохранены. Работа завершена.")
             break
         elif choice == 2:
-            query = input("Введите название маршрута для поиска: ")
+            query = input("Введите номер маршрута для поиска: ")
             found = find_bus(buses, query)
             show_buses(found)
         else:
