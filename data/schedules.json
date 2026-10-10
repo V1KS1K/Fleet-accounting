@@ -1,0 +1,16 @@
+[
+  {
+    "id": 1,
+    "bus_id": 1,
+    "route_id": 1,
+    "departure_time": "08:00",
+    "is_cancelled": false
+  },
+  {
+    "id": 2,
+    "bus_id": 2,
+    "route_id": 2,
+    "departure_time": "09:30",
+    "is_cancelled": false
+  }
+]
