@@ -10,9 +10,10 @@ Fleet-accounting — учебное приложение для управлен
 ## 2. Используемые технологии
 * Python 3;
 * Django 5.2;
-* Django Template Language (DTL);
+* Django Template Language;
 * HTML5;
 * CSS3;
+* SQLlite3
 * JavaScript;
 * Bootstrap 5.3;
 * JSON для хранения данных;

@@ -4,7 +4,7 @@
 {% if bus %}
     Автобус {{ bus.plate }} — Автопарк
 {% else %}
-    Автобус не найдено — Автопарк
+    Автобус не найден — Автопарк
 {% endif %}
 {% endblock %}
 
@@ -19,24 +19,28 @@
                 <strong>ID:</strong> {{ bus.id }}
             </p>
             <p class="card-text">
-                <strong>Маршрут:</strong>
-                {% if bus.route %}
-                    {{ bus.route.name }} (Остановки: {{ bus.route.get_stops_str }})
-                {% else %}
-                    Без маршрута
-                {% endif %}
+                <strong>Маршрут:</strong> {{ bus.route_name|default:"Без маршрута" }}
             </p>
             <p class="card-text">
-                <strong>Водитель:</strong>
-                {% if bus.driver %}
-                    {{ bus.driver.name }}
-                {% else %}
-                    Без водителя
-                {% endif %}
+                <strong>Водитель:</strong> {{ bus.driver_name|default:"Без водителя" }}
             </p>
             <p class="card-text">
-                <strong>Статус:</strong> {{ bus.get_route_status }}
+                <strong>Статус:</strong> 
+                {% if bus.on_the_way == 1 %}
+                    <span class="badge bg-success">Автобус в пути</span>
+                {% else %}
+                    <span class="badge bg-secondary">Автобус в автопарке</span>
+                {% endif %}
             </p>
+            
+            {% if stops %}
+                <p class="card-text">
+                    <strong>Остановки маршрута:</strong>
+                    {% for stop in stops %}
+                        {{ stop.name }}{% if not forloop.last %}, {% endif %}
+                    {% endfor %}
+                </p>
+            {% endif %}
         </div>
     </div>
 {% else %}
