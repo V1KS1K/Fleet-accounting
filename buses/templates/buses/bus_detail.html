@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}
+{% if bus %}
+    Автобус {{ bus.plate }} — Автопарк
+{% else %}
+    Автобус не найдено — Автопарк
+{% endif %}
+{% endblock %}
+
+{% block content %}
+{% if bus %}
+    <div class="card">
+        <div class="card-body">
+            <h1 class="card-title">
+                Автобус {{ bus.plate|default:"Без номера" }}
+            </h1>
+            <p class="card-text">
+                <strong>ID:</strong> {{ bus.id }}
+            </p>
+            <p class="card-text">
+                <strong>Маршрут:</strong>
+                {% if bus.route %}
+                    {{ bus.route.name }} (Остановки: {{ bus.route.get_stops_str }})
+                {% else %}
+                    Без маршрута
+                {% endif %}
+            </p>
+            <p class="card-text">
+                <strong>Водитель:</strong>
+                {% if bus.driver %}
+                    {{ bus.driver.name }}
+                {% else %}
+                    Без водителя
+                {% endif %}
+            </p>
+            <p class="card-text">
+                <strong>Статус:</strong> {{ bus.get_route_status }}
+            </p>
+        </div>
+    </div>
+{% else %}
+    <h1 class="text-danger">
+        Автобус не найден
+    </h1>
+    <p>
+        Автобус с указанным идентификатором отсутствует.
+    </p>
+{% endif %}
+
+<a
+    href="{% url 'buses:list' %}"
+    class="btn btn-outline-secondary mt-3"
+>
+    ← к списку автобусов
+</a>
+{% endblock %}

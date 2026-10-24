@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block title %}
+Автобусы — Автопарк
+{% endblock %}
+
+{% block content %}
+<h1>Список автобусов</h1>
+<p>
+    Всего автобусов: {{ buses|length }}
+</p>
+{% for bus in buses %}
+    {% include "buses/includes/bus_card.html" %}
+{% empty %}
+    <p>Автобусы не найдены.</p>
+{% endfor %}
+{% endblock %}

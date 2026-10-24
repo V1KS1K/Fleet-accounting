@@ -1,0 +1,24 @@
+<article class="card bus-card mb-3">
+    <div class="card-body">
+        <h2 class="card-title">
+            Автобус {{ bus.plate|default:"Без номера" }}
+        </h2>
+        <p class="card-text">
+            Маршрут:
+            {% if bus.route %}
+                {{ bus.route.name }}
+            {% else %}
+                Без маршрута
+            {% endif %}
+        </p>
+        <p class="card-text">
+            Статус: {{ bus.get_route_status }}
+        </p>
+        <a
+            href="{% url 'buses:detail' bus.id %}"
+            class="btn btn-primary"
+        >
+            Подробнее
+        </a>
+    </div>
+</article>

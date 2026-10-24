@@ -194,3 +194,8 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+
+#  flake8
+#  python -m pytest -v
+#  python manage.py migrate
+#  python manage.py runserver

@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block title %}
+Главная — Автопарк
+{% endblock %}
+
+{% block content %}
+<h1 class="display-4">Учет автопарка</h1>
+<p class="lead">
+    Система управления автобусами и расписанием рейсов.
+</p>
+<p>Основные разделы:</p>
+<a href="{% url 'buses:list' %}" class="btn btn-primary me-2">
+    Автобусы
+</a>
+<a href="{% url 'schedules:schedules' %}" class="btn btn-secondary">
+    Расписание рейсов
+</a>
+{% endblock %}

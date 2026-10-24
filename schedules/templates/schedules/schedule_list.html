@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block title %}
+Расписание рейсов — Автопарк
+{% endblock %}
+
+{% block content %}
+<h1>Расписание рейсов</h1>
+<p>
+    Всего рейсов: {{ schedules|length }}
+</p>
+<ul class="list-group">
+    {% for schedule in schedules %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+            <div>
+                <a href="{% url 'schedules:detail' schedule.id %}">
+                    Рейс №{{ schedule.id }}
+                </a>
+                — Маршрут: {{ schedule.route.name|default:"Без названия" }}
+                | Автобус: {{ schedule.bus.plate }}
+                | Время: {{ schedule.departure_time }}
+            </div>
+            {% include "schedules/includes/schedule_status.html" %}
+        </li>
+    {% empty %}
+        <li class="list-group-item">
+            Рейсы в расписании не найдены.
+        </li>
+    {% endfor %}
+</ul>
+{% endblock %}

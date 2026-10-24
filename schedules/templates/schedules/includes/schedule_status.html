@@ -1,0 +1,9 @@
+{% if schedule.is_cancelled %}
+    <span class="badge bg-secondary schedule-status schedule-status-cancelled">
+        Отменен
+    </span>
+{% else %}
+    <span class="badge bg-success schedule-status schedule-status-active">
+        Активен
+    </span>
+{% endif %}
