@@ -1,99 +1,48 @@
 # Fleet-accounting — система учета автопарка и расписания
 
-Система учета автобусного парка и расписания рейсов на Python с веб-интерфейсом на Django.
+Учебное веб-приложение для управления автобусным парком, маршрутами и расписанием рейсов.
 
-## 1. Назначение проекта
-Fleet-accounting — учебное приложение для управления автопарком и расписанием рейсов.
-Проект позволяет хранить сведения об остановках, маршрутах, водителях, автобусах и рейсах, выполнять основные операции с этими объектами и предоставлять доступ к информации через веб-интерфейс Django.
-Проект развивается поэтапно: консольная версия приложения дополняется веб-интерфейсом и постепенно переводится на возможности Django.
+## Технологии
+* Python 3.x
+* Django 5.2
+* SQLite (доступ к данным через Django ORM)
+* Bootstrap 5.3
 
-## 2. Используемые технологии
-* Python 3;
-* Django 5.2;
-* Django Template Language;
-* HTML5;
-* CSS3;
-* SQLlite3
-* JavaScript;
-* Bootstrap 5.3;
-* JSON для хранения данных;
-* Git;
-* pytest;
-* flake8.
+## Запуск проекта
+1. Клонируйте репозиторий:
+   `git clone <адрес репозитория>`
+2. Создайте и активируйте виртуальное окружение:
+   `python -m venv venv`
+   `venv\Scripts\activate`
+3. Установите зависимости:
+   `pip install -r requirements.txt`
+4. Примените миграции:
+   `python manage.py migrate`
+5. Перенесите данные из базы ПР7 в базу Django ORM:
+   `python db/import_sqlite_to_orm.py`
+6. Запустите сервер разработки:
+   `python manage.py runserver`
+7. Откройте в браузере адрес `http://127.0.0.1:8000/`
 
-## 3. Предметная область
-В системе используются основные сущности:
-* **Автобус (Bus)** — идентификатор, госномер, маршрут, водитель и статус нахождения на линии;
-* **Маршрут (Route)** — идентификатор, название и список остановок;
-* **Водитель (Driver)** — идентификатор и ФИО водителя;
-* **Остановка (Stop)** — идентификатор и название остановки;
-* **Расписание (Schedule)** — идентификатор, автобус, маршрут, время отправления и признак отмены рейса.
+## Модели данных (Django ORM)
+* `Stop` (`buses/models.py`) — остановки; поле: `name`.
+* `Route` (`buses/models.py`) — маршруты; поле: `name`, связь `ManyToManyField` с `Stop`.
+* `Driver` (`buses/models.py`) — водители; поле: `name`.
+* `Bus` (`buses/models.py`) — автобусы; поля: `plate`, `on_the_way`, внешние ключи `ForeignKey` на `Route` и `Driver`.
+* `Schedule` (`schedules/models.py`) — рейсы расписания; поля: `departure_time`, `is_cancelled`, внешние ключи `ForeignKey` на `Bus` и `Route` (`on_delete=models.PROTECT`).
 
-Для предметной области реализованы собственные Python-классы.
-На текущем этапе данные хранятся в JSON-файлах. Django ORM и база данных приложения пока не используются.
+## Реализованные сценарии (ПР9)
+* Просмотр списка автобусов, строковый поиск по госномеру и маршруту, фильтрация по статусу;
+* Просмотр детальной карточки автобуса и связанных остановок;
+* Поиск свободных автобусов на выбранное время (с учётом отменённых рейсов);
+* Просмотр расписания активных рейсов с фильтрацией по времени, маршруту и автобусу;
+* Сортировка расписания по времени, маршруту или автобусу;
+* Постраничный вывод расписания (`Paginator`) с сохранением GET-параметров через `{% querystring %}`;
+* Статистика количества активных рейсов по маршрутам (`annotate`, `Count`, `Q`, `aggregate`).
 
-## 4. Структура проекта
-```text
-Fleet-accounting/
-├── buses/
-│   ├── templates/
-│   │   └── buses/
-│   │       ├── includes/
-│   │       │   └── bus_card.html
-│   │       ├── bus_detail.html
-│   │       └── bus_list.html
-│   ├── urls.py
-│   └── views.py
-├── schedules/
-│   ├── templates/
-│   │   └── schedules/
-│   │       ├── includes/
-│   │       │   └── schedule_status.html
-│   │       ├── schedule_detail.html
-│   │       └── schedule_list.html
-│   ├── urls.py
-│   └── views.py
-├── homepage/
-│   ├── static/
-│   │   └── homepage/
-│   │       ├── css/
-│   │       │   └── style.css
-│   │       ├── img/
-│   │       │   └── logo.png
-│   │       └── js/
-│   │           └── main.js
-│   ├── templates/
-│   │   └── homepage/
-│   │       ├── index.html
-│   │       └── 404.html
-│   ├── urls.py
-│   └── views.py
-├── templates/
-│   ├── includes/
-│   │   └── navigation.html
-│   └── base.html
-├── models/
-│   ├── __init__.py
-│   ├── bus.py
-│   ├── driver.py
-│   ├── route.py
-│   ├── schedule.py
-│   └── stop.py
-├── data/
-│   ├── buses.json
-│   ├── drivers.json
-│   ├── routes.json
-│   ├── schedules.json
-│   └── stops.json
-├── tests/
-│   ├── test_buses.py
-│   ├── test_models.py
-│   └── test_schedules.py
-├── fleet_project/
-│   ├── settings.py
-│   └── urls.py
-├── main.py
-├── storage.py
-├── utils.py
-├── manage.py
-└── README.md
+## Структура проекта
+* `buses/` — модели (`Stop`, `Route`, `Driver`, `Bus`) и представления автопарка
+* `schedules/` — модель `Schedule`, представления расписания и статистики
+* `homepage/` — главная страница и статика
+* `templates/` — HTML-шаблоны страниц
+* `db/` — скрипты инспекции (`inspect_source_db.py`) и переноса данных в ORM (`import_sqlite_to_orm.py`)

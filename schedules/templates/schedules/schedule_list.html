@@ -6,26 +6,136 @@
 
 {% block content %}
 <h1>Расписание рейсов</h1>
-<p>
-    Всего рейсов: {{ schedules|length }}
-</p>
-<ul class="list-group">
+
+<form method="get" class="mb-4">
+    <div class="row g-3 align-items-end">
+        <div class="col-md-2">
+            <label for="time" class="form-label">Время (ЧЧ:ММ)</label>
+            <input
+                type="text"
+                id="time"
+                name="time"
+                class="form-control"
+                placeholder="08:00"
+                value="{{ departure_time }}"
+            >
+        </div>
+        <div class="col-md-3">
+            <label for="route" class="form-label">Маршрут</label>
+            <select id="route" name="route" class="form-select">
+                <option value="">Все маршруты</option>
+                {% for route in routes %}
+                    <option
+                        value="{{ route.pk }}"
+                        {% if selected_route == route.pk|stringformat:"s" %}selected{% endif %}
+                    >
+                        {{ route.name }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label for="bus" class="form-label">Автобус</label>
+            <select id="bus" name="bus" class="form-select">
+                <option value="">Все автобусы</option>
+                {% for bus in buses %}
+                    <option
+                        value="{{ bus.pk }}"
+                        {% if selected_bus == bus.pk|stringformat:"s" %}selected{% endif %}
+                    >
+                        {{ bus.plate }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2">
+            <label for="sort" class="form-label">Сортировать по</label>
+            <select id="sort" name="sort" class="form-select">
+                <option value="time" {% if sort == "time" %}selected{% endif %}>
+                    Времени
+                </option>
+                <option value="route" {% if sort == "route" %}selected{% endif %}>
+                    Маршруту
+                </option>
+                <option value="bus" {% if sort == "bus" %}selected{% endif %}>
+                    Автобусу
+                </option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-primary">Найти</button>
+            <a href="{% url 'schedules:schedules' %}" class="btn btn-outline-secondary">
+                Сбросить
+            </a>
+        </div>
+    </div>
+</form>
+
+{% if error %}
+    <p class="text-danger">{{ error }}</p>
+{% endif %}
+
+<ul class="list-group mb-4">
     {% for schedule in schedules %}
         <li class="list-group-item d-flex justify-content-between align-items-center">
             <div>
                 <a href="{% url 'schedules:detail' schedule.id %}">
                     Рейс №{{ schedule.id }}
                 </a>
-                — Маршрут: {{ schedule.route.name|default:"Без названия" }}
-                | Автобус: {{ schedule.bus.plate }}
+                — Маршрут: {{ schedule.route_name|default:"Без названия" }}
+                | Автобус: {{ schedule.bus_plate }}
                 | Время: {{ schedule.departure_time }}
             </div>
             {% include "schedules/includes/schedule_status.html" %}
         </li>
     {% empty %}
         <li class="list-group-item">
-            Рейсы в расписании не найдены.
+            Активных рейсов в расписании не найдено.
         </li>
     {% endfor %}
 </ul>
+
+{% if page_obj.paginator.num_pages > 1 %}
+<nav aria-label="Навигация по страницам">
+    <ul class="pagination justify-content-center">
+        {% if page_obj.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="{% querystring page=page_obj.previous_page_number %}">
+                    Назад
+                </a>
+            </li>
+        {% else %}
+            <li class="page-item disabled">
+                <span class="page-link">Назад</span>
+            </li>
+        {% endif %}
+
+        {% for page_number in page_obj.paginator.page_range %}
+            {% if page_number == page_obj.number %}
+                <li class="page-item active" aria-current="page">
+                    <span class="page-link">{{ page_number }}</span>
+                </li>
+            {% else %}
+                <li class="page-item">
+                    <a class="page-link" href="{% querystring page=page_number %}">
+                        {{ page_number }}
+                    </a>
+                </li>
+            {% endif %}
+        {% endfor %}
+
+        {% if page_obj.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="{% querystring page=page_obj.next_page_number %}">
+                    Далее
+                </a>
+            </li>
+        {% else %}
+            <li class="page-item disabled">
+                <span class="page-link">Далее</span>
+            </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
 {% endblock %}

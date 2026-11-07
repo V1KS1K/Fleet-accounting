@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block title %}
+Статистика рейсов — Автопарк
+{% endblock %}
+
+{% block content %}
+<h1>Статистика рейсов по маршрутам</h1>
+
+<p class="lead">
+    Всего рейсов в базе: <strong>{{ summary.total_count }}</strong> |
+    Активных рейсов: <strong>{{ summary.active_count }}</strong>
+</p>
+
+{% for item in statistics %}
+    <article class="card mb-3">
+        <div class="card-body">
+            <h2 class="h5 card-title">Маршрут {{ item.route_name }}</h2>
+            <p class="card-text mb-0">
+                Активных рейсов: <strong>{{ item.schedules_count }}</strong>
+            </p>
+        </div>
+    </article>
+{% empty %}
+    <p>Маршруты отсутствуют.</p>
+{% endfor %}
+{% endblock %}

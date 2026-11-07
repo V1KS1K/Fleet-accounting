@@ -5,5 +5,6 @@ app_name = "schedules"
 
 urlpatterns = [
     path("", views.schedules_list, name="schedules"),
+    path("statistics/", views.statistics, name="statistics"),
     path("<int:schedule_id>/", views.schedule_detail, name="detail"),
 ]

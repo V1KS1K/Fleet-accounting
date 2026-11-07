@@ -1,27 +1,29 @@
-import sqlite3
-from django.shortcuts import render
-
-DB_PATH = "data/fleet.sqlite"
+from django.db.models import Q
+from django.shortcuts import get_object_or_404, render
+from buses.models import Bus
+from schedules.models import Schedule
 
 
 def buses_list(request):
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
-    buses = conn.execute("""
-        SELECT 
-            b.id, 
-            b.plate, 
-            b.on_the_way,
-            r.name AS route_name,
-            d.name AS driver_name
-        FROM buses b
-        LEFT JOIN routes r ON b.route_id = r.id
-        LEFT JOIN drivers d ON b.driver_id = d.id
-        ORDER BY b.plate;
-    """).fetchall()
-    conn.close()
+    query = request.GET.get("q", "").strip()
+    status_filter = request.GET.get("on_the_way", "").strip()
+
+    buses_qs = Bus.objects.select_related("route", "driver").order_by("plate")
+
+    if query:
+        buses_qs = buses_qs.filter(
+            Q(plate__icontains=query) | Q(route__name__icontains=query)
+        )
+
+    if status_filter == "1":
+        buses_qs = buses_qs.filter(on_the_way=True)
+    elif status_filter == "0":
+        buses_qs = buses_qs.filter(on_the_way=False)
+
     context = {
-        "buses": buses,
+        "buses": buses_qs,
+        "query": query,
+        "status_filter": status_filter,
     }
     return render(
         request,
@@ -31,38 +33,61 @@ def buses_list(request):
 
 
 def bus_detail(request, bus_id):
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
-    bus = conn.execute("""
-        SELECT 
-            b.id, 
-            b.plate, 
-            b.on_the_way,
-            r.id AS route_id,
-            r.name AS route_name,
-            d.id AS driver_id,
-            d.name AS driver_name
-        FROM buses b
-        LEFT JOIN routes r ON b.route_id = r.id
-        LEFT JOIN drivers d ON b.driver_id = d.id
-        WHERE b.id = ?;
-    """, (bus_id,)).fetchone()  
-    stops = []
-    if bus and bus["route_id"]:
-        stops = conn.execute("""
-            SELECT s.name 
-            FROM stops s
-            JOIN route_stops rs ON s.id = rs.stop_id
-            WHERE rs.route_id = ?;
-        """, (bus["route_id"],)).fetchall()
-    conn.close() 
+    bus = get_object_or_404(
+        Bus.objects.select_related("route", "driver").prefetch_related("route__stops"),
+        pk=bus_id,
+    )
+    stops = bus.route.stops.all() if bus.route else []
+    active_schedules = bus.schedules.filter(is_cancelled=False).select_related("route")
+
     context = {
         "bus": bus,
         "stops": stops,
+        "active_schedules": active_schedules,
     }
     return render(
         request,
         "buses/bus_detail.html",
         context,
-        status=404 if bus is None else 200,
+    )
+
+
+def available_buses(request):
+    departure_time = request.GET.get("time", "").strip()
+    buses_list_data = []
+    error = None
+
+    if departure_time:
+        parts = departure_time.split(":")
+        if (
+            len(parts) != 2
+            or not (parts[0].isdigit() and parts[1].isdigit())
+            or not (0 <= int(parts[0]) <= 23 and 0 <= int(parts[1]) <= 59)
+        ):
+            error = "Укажите корректное время в формате ЧЧ:ММ."
+        else:
+            busy_bus_ids = Schedule.objects.filter(
+                departure_time=departure_time,
+                is_cancelled=False,
+            ).values_list(
+                "bus_id",
+                flat=True,
+            )
+            buses_list_data = (
+                Bus.objects.exclude(
+                    pk__in=busy_bus_ids,
+                )
+                .select_related("route", "driver")
+                .order_by("plate")
+            )
+
+    context = {
+        "buses": buses_list_data,
+        "departure_time": departure_time,
+        "error": error,
+    }
+    return render(
+        request,
+        "buses/available.html",
+        context,
     )

@@ -1,61 +1,41 @@
 {% extends "base.html" %}
 
 {% block title %}
-{% if bus %}
-    Автобус {{ bus.plate }} — Автопарк
-{% else %}
-    Автобус не найден — Автопарк
-{% endif %}
+Автобус {{ bus.plate }} — Автопарк
 {% endblock %}
 
 {% block content %}
-{% if bus %}
-    <div class="card">
-        <div class="card-body">
-            <h1 class="card-title">
-                Автобус {{ bus.plate|default:"Без номера" }}
-            </h1>
-            <p class="card-text">
-                <strong>ID:</strong> {{ bus.id }}
-            </p>
-            <p class="card-text">
-                <strong>Маршрут:</strong> {{ bus.route_name|default:"Без маршрута" }}
-            </p>
-            <p class="card-text">
-                <strong>Водитель:</strong> {{ bus.driver_name|default:"Без водителя" }}
-            </p>
-            <p class="card-text">
-                <strong>Статус:</strong> 
-                {% if bus.on_the_way == 1 %}
-                    <span class="badge bg-success">Автобус в пути</span>
-                {% else %}
-                    <span class="badge bg-secondary">Автобус в автопарке</span>
-                {% endif %}
-            </p>
-            
-            {% if stops %}
-                <p class="card-text">
-                    <strong>Остановки маршрута:</strong>
-                    {% for stop in stops %}
-                        {{ stop.name }}{% if not forloop.last %}, {% endif %}
-                    {% endfor %}
-                </p>
+<div class="card shadow-sm">
+    <div class="card-body">
+        <h1 class="card-title h3 mb-3">
+            Автобус {{ bus.plate|default:"Без номера" }}
+        </h1>
+        <p class="card-text">
+            <strong>ID:</strong> {{ bus.pk }}
+        </p>
+        <p class="card-text">
+            <strong>Маршрут:</strong>
+            {% if bus.route %}
+                {{ bus.route.name }} (Остановки: {{ bus.route.get_stops_str }})
+            {% else %}
+                Без маршрута
             {% endif %}
-        </div>
+        </p>
+        <p class="card-text">
+            <strong>Водитель:</strong>
+            {% if bus.driver %}
+                {{ bus.driver.name }}
+            {% else %}
+                Без водителя
+            {% endif %}
+        </p>
+        <p class="card-text">
+            <strong>Статус:</strong> {{ bus.get_route_status }}
+        </p>
     </div>
-{% else %}
-    <h1 class="text-danger">
-        Автобус не найден
-    </h1>
-    <p>
-        Автобус с указанным идентификатором отсутствует.
-    </p>
-{% endif %}
+</div>
 
-<a
-    href="{% url 'buses:list' %}"
-    class="btn btn-outline-secondary mt-3"
->
+<a href="{% url 'buses:list' %}" class="btn btn-outline-secondary mt-3">
     ← к списку автобусов
 </a>
 {% endblock %}

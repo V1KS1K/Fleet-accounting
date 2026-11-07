@@ -5,10 +5,38 @@
 {% endblock %}
 
 {% block content %}
-<h1>Список автобусов</h1>
-<p>
-    Всего автобусов: {{ buses|length }}
-</p>
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1>Список автобусов</h1>
+    <a href="{% url 'buses:available' %}" class="btn btn-outline-primary">
+        Найти свободный автобус на время
+    </a>
+</div>
+
+<form method="get" class="row g-3 mb-4">
+    <div class="col-md-5">
+        <input
+            type="text"
+            name="q"
+            class="form-control"
+            placeholder="Поиск по госномеру или маршруту..."
+            value="{{ query }}"
+        >
+    </div>
+    <div class="col-md-4">
+        <select name="on_the_way" class="form-select">
+            <option value="">Все статусы</option>
+            <option value="1" {% if status_filter == "1" %}selected{% endif %}>В пути</option>
+            <option value="0" {% if status_filter == "0" %}selected{% endif %}>В автопарке</option>
+        </select>
+    </div>
+    <div class="col-md-3">
+        <button type="submit" class="btn btn-primary">Найти</button>
+        <a href="{% url 'buses:list' %}" class="btn btn-outline-secondary">Сбросить</a>
+    </div>
+</form>
+
+<p>Всего найдено автобусов: {{ buses|length }}</p>
+
 {% for bus in buses %}
     {% include "buses/includes/bus_card.html" %}
 {% empty %}
